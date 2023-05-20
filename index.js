@@ -28,12 +28,21 @@ async function run() {
     // Send a ping to confirm a successful connection
 
     const toyCollection = client.db('toyMarket').collection('datas');
+    const alltoyCollection=client.db('toyMarket').collection('bookings');
+    //catagory data collect 
     app.get('/datas',async(req,res)=>{
     const cursor= toyCollection.find();
     const result = await cursor.limit(20).toArray();
     res.send(result)
     })
-       
+    
+    //all toy collect
+
+     app.get('/alltoy',async(req,res)=>{
+      const cursor=alltoyCollection.find();
+      const result = await cursor.limit(20).toArray();
+      res.send(result);
+     })
     app.get('/singleservices/:id',async (req,res)=>{
       const result=await toyCollection.findOne({
         _id:new ObjectId(req.params.id)
