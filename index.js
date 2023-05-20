@@ -66,10 +66,18 @@ async function run() {
       }
 
       // console.log(query);
+      // const toys = await collection.find()..toArray();
 
-      const result = await alltoyCollection.find(query).toArray();
+      const result = await alltoyCollection.find(query).sort({ price: 1 }).toArray();
       // console.log(result)
       res.send(result);
+    })
+    app.get("/updated/:id",async(req,res)=>{
+      const id=req.params.id;
+      const query = {_id:new ObjectId(id)}
+      const result = await alltoyCollection.findOne(query)
+      res.send(result);
+
     })
 
 
@@ -86,7 +94,25 @@ async function run() {
       const result = await alltoyCollection.insertOne(booking);
       res.send(result);
     })
+    //update 
+    app.put('/bookings/:id',async(req,res)=>{
+      const updatedBooking = req.body;
+      const id=req.params.id
+      const filter= {_id: new ObjectId(id)}
+      const options ={upsert:true}
+      
+      const updatedDoc={
+        $set:{
+          price:updatedBooking.price ,
+          availableQuantity: updatedBooking.availableQuantity,
+         description:updatedBooking.description
+        }
+      }
+      const result =await alltoyCollection.updateOne(filter,updatedDoc,options)
 
+      console.log(result)
+      res.send(result)
+    })
 
     app.delete('/bookings/:id',async(req,res)=>{
       const id=req.params.id
