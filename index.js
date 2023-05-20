@@ -30,7 +30,7 @@ async function run() {
     const toyCollection = client.db('toyMarket').collection('datas');
     app.get('/datas',async(req,res)=>{
     const cursor= toyCollection.find();
-    const result = await cursor.toArray();
+    const result = await cursor.limit(20).toArray();
     res.send(result)
     })
 
