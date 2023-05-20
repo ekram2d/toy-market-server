@@ -47,8 +47,15 @@ async function run() {
       const result=await toyCollection.findOne({
         _id:new ObjectId(req.params.id)
       })
-      console.log(result);
+      // console.log(result);
       res.send(result)
+    })
+
+    app.post('/bookings',async(req,res)=>{
+      const booking = req.body;
+      console.log(booking)
+      const result=await alltoyCollection.insertOne(booking);
+      res.send(result);
     })
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
