@@ -78,7 +78,7 @@ async function run() {
         query = { sellerEmail: req.query.email }
       }
 
-      console.log(req.query.value)
+      // console.log(req.query.value)
       let result = {};
       if (req.query.value == '1') {
         result = await alltoyCollection.find(query).sort({ price: 1 }).toArray();
@@ -91,6 +91,24 @@ async function run() {
 
       res.send(result);
     })
+
+    app.get('/search', async (req, res) => {
+
+      let query = {};
+      if (req.query?.name ){
+        query = { name: req.query.name }
+      }
+
+      // console.log(r)
+      let result = {};
+    
+  // console.log(req.query)
+        result = await alltoyCollection.find(query).toArray();
+     
+
+      res.send(result);
+    })
+
     app.get("/updated/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
