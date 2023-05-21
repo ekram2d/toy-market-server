@@ -4,7 +4,7 @@ const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express()
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 //mdiileware
 
 app.use(cors());
@@ -14,22 +14,35 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USERS}:${process.env.DB_PASS}@cluster0.wlwsqet.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
-});
+const client = new MongoClient(uri, { useUnifiedTopology: true }, { useNewUrlParser: true }, { connectTimeoutMS: 30000 }, { keepAlive: 1 });
 
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-    // Send a ping to confirm a successful connection
+    // await client.connect();
+
 
     const toyCollection = client.db('toyMarket').collection('datas');
     const alltoyCollection = client.db('toyMarket').collection('bookings');
+
+
+
+    // const indexKeys = { name: 1 };
+    // const indexOptions = { name: "name" };
+    // const result = await alltoyCollection.createIndex(indexKeys, indexOptions)
+    // app.get("/jobsearchBYName/:text", async (req, res) => {
+    //   const search = req.params.text;
+    //   const result = await alltoyCollection.find({
+    //     $or: [
+
+    //       { name: { $regex: search, $options: "i" } }
+    //     ]
+
+    //   }).toArray()
+    //   res.send(result);
+    // })
+
+
     //catagory data collect 
     app.get('/datas', async (req, res) => {
       const cursor = toyCollection.find();
@@ -48,33 +61,39 @@ async function run() {
       const result = await toyCollection.findOne({
         _id: new ObjectId(req.params.id)
       })
-      // console.log(result);
+
       res.send(result)
     })
     app.get('/singleuser/:id', async (req, res) => {
       const result = await alltoyCollection.findOne({
         _id: new ObjectId(req.params.id)
       })
-      // console.log(result);
+
       res.send(result)
     })
     app.get('/bookings', async (req, res) => {
 
       let query = {};
       if (req.query?.email) {
-        query = {sellerEmail: req.query.email }
+        query = { sellerEmail: req.query.email }
       }
 
-      // console.log(query);
-      // const toys = await collection.find()..toArray();
+      console.log(req.query.value)
+      let result = {};
+      if (req.query.value == '1') {
+        result = await alltoyCollection.find(query).sort({ price: 1 }).toArray();
+      }
+      else if (req.query.value == '2') {
+        result = await alltoyCollection.find(query).sort({ price: -1 }).toArray();
+      } else {
+        result = await alltoyCollection.find(query).sort({  }).toArray();
+      }
 
-      const result = await alltoyCollection.find(query).sort({ price: 1 }).toArray();
-      // console.log(result)
       res.send(result);
     })
-    app.get("/updated/:id",async(req,res)=>{
-      const id=req.params.id;
-      const query = {_id:new ObjectId(id)}
+    app.get("/updated/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
       const result = await alltoyCollection.findOne(query)
       res.send(result);
 
@@ -95,28 +114,28 @@ async function run() {
       res.send(result);
     })
     //update 
-    app.put('/bookings/:id',async(req,res)=>{
+    app.put('/bookings/:id', async (req, res) => {
       const updatedBooking = req.body;
-      const id=req.params.id
-      const filter= {_id: new ObjectId(id)}
-      const options ={upsert:true}
-      
-      const updatedDoc={
-        $set:{
-          price:updatedBooking.price ,
+      const id = req.params.id
+      const filter = { _id: new ObjectId(id) }
+      const options = { upsert: true }
+
+      const updatedDoc = {
+        $set: {
+          price: updatedBooking.price,
           availableQuantity: updatedBooking.availableQuantity,
-         description:updatedBooking.description
+          description: updatedBooking.description
         }
       }
-      const result =await alltoyCollection.updateOne(filter,updatedDoc,options)
+      const result = await alltoyCollection.updateOne(filter, updatedDoc, options)
 
       console.log(result)
       res.send(result)
     })
 
-    app.delete('/bookings/:id',async(req,res)=>{
-      const id=req.params.id
-      const query ={_id:new ObjectId(id)}
+    app.delete('/bookings/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
       const result = await alltoyCollection.deleteOne(query);
       res.send(result);
     })
@@ -132,7 +151,7 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-  res.send('toy server is running !')
+  res.send('toy server is runninggg !')
 })
 
 app.listen(port, () => {
